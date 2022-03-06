@@ -40,12 +40,11 @@
 
 <script>
 export default {
-  name: 'LoginPage',
   data () {
     return {
       loginForm: {
-        username: '',
-        password: ''
+        username: 'admin',
+        password: '123456'
       },
       loginFormRules: {
         username: [
@@ -69,6 +68,13 @@ export default {
         const { data: res } = await this.$http.post('login', this.loginForm)
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
         this.$message.success(res.meta.msg)
+        // 1将登录成功之后从接口获取的token保存到客户端的sessionStorage中
+        // 1.1项目中除了登录之外的其他API接口，必须在登录之后才能访问
+        // 1.2token只在当前网站打开期间生效，所以将token保存在sessionStorage中
+        if (!res.data.token) return
+        window.sessionStorage.setItem('token', res.data.token)
+        // 2通过编程式导航跳转到后台主页，路由地址是/home
+        this.$router.push('/home')
       })
     }
   }
