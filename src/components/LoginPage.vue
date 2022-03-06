@@ -40,7 +40,6 @@
 
 <script>
 export default {
-  name: 'LoginPage',
   data () {
     return {
       loginForm: {
@@ -66,10 +65,9 @@ export default {
     login (formRefs) {
       this.$refs[formRefs].validate(async (vaild) => {
         if (!vaild) return
-        const res = await this.$http.post('login', this.loginForm)
-        console.log(res.data.meta.status)
-        if (res.data.meta.status !== 200) return this.$message.error('登录失败')
-        this.$message.success('登录成功')
+        const { data: res } = await this.$http.post('login', this.loginForm)
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.$message.success(res.meta.msg)
       })
     }
   }

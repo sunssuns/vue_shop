@@ -6,14 +6,10 @@
 </template>
 
 <script>
-
 export default {
   name: 'app',
-  components: {
-
-  }
+  components: {}
 }
 </script>
 
-<style lang="less" scoped>
-</style>
+<style lang="less" scoped></style>

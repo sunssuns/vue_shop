@@ -5,8 +5,8 @@ import LoginPage from '@/components/LoginPage.vue'
 Vue.use(VueRouter)
 
 const routes = [
-  { path: '/', redirect: '/loginPage' },
-  { path: '/loginPage', component: LoginPage }
+  { path: '/', redirect: '/login' },
+  { path: '/login', component: LoginPage }
 ]
 
 const router = new VueRouter({
