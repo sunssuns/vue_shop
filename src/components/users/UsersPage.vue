@@ -72,6 +72,7 @@
               type="danger"
               icon="el-icon-setting"
               size="mini"
+              @click="showAllotRoles(scope.row)"
             ></el-button>
           </template>
         </el-table-column>
@@ -155,6 +156,27 @@
         >
       </span>
     </el-dialog>
+
+    <!-- 分配角色对话框 -->
+    <el-dialog title="提示" :visible.sync="allotRolesDialog" width="50%">
+      <div>
+        <p>用户名称：{{ userInfo.username }}</p>
+        <p>用户角色：{{ userInfo.role_name }}</p>
+        <el-select v-model="selectedRolesId" placeholder="请选择">
+          <el-option
+            v-for="item in rolesList"
+            :key="item.id"
+            :label="item.roleName"
+            :value="item.id"
+          >
+          </el-option>
+        </el-select>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="allotRolesDialog = false">取 消</el-button>
+        <el-button type="primary" @click="allotRoles">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -169,7 +191,7 @@ export default {
         // 当前页数
         pagenum: 1,
         // 当前每页显示多少条数据
-        pagesize: 2
+        pagesize: 6
       },
       // 获取的用户列表
       userslist: [],
@@ -212,7 +234,14 @@ export default {
       // 控制是否编辑用户信息对话框
       editDialogVisible: false,
       // 保存要修改的用户信息
-      editForm: {}
+      editForm: {},
+      // 控制显示分配角色对话框
+      allotRolesDialog: false,
+      // 分配角色的用户信息
+      userInfo: {},
+      // 角色列表
+      rolesList: [],
+      selectedRolesId: ''
     }
   },
   created() {
@@ -305,9 +334,32 @@ export default {
           type: 'warning'
         }
       ).catch((err) => err)
-      if (confirmResult === 'cancel') return this.$message.error('已取消删除操作')
+      if (confirmResult === 'cancel') {
+        return this.$message.error('已取消删除操作')
+      }
       const { data: res } = await this.$http.delete(`users/${id}`)
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      this.getUsersList()
+      this.$message.success(res.meta.msg)
+    },
+    async showAllotRoles(userInfo) {
+      this.userInfo = userInfo
+      const { data: res } = await this.$http.get('roles')
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      this.rolesList = res.data
+      this.allotRolesDialog = true
+    },
+    async allotRoles() {
+      const { data: res } = await this.$http.put(
+        `users/${this.userInfo.id}/role`,
+        {
+          id: this.userInfo.id,
+          rid: this.selectedRolesId
+        }
+      )
+      console.log(res)
+      if (res.meta.status !== 200) this.$message.error(res.meta.msg)
+      this.allotRolesDialog = false
       this.getUsersList()
       this.$message.success(res.meta.msg)
     }
