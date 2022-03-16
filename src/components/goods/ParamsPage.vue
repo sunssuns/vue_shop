@@ -40,7 +40,38 @@
           <!-- 动态参数表格 -->
           <el-table :data="manyParamsData" border stripe>
             <!-- 展开行 -->
-            <el-table-column type="expand"></el-table-column>
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <!-- 选项 -->
+                <el-tag
+                  v-for="(item, index) in scope.row.attr_vals"
+                  :key="index"
+                  closable
+                  @close="handleClose(index, scope.row)"
+                >
+                  {{ item }}</el-tag
+                >
+                <!-- 输入框 -->
+                <el-input
+                  class="input-new-tag"
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm"
+                >
+                </el-input>
+                <!-- 添加按钮 -->
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput(scope.row)"
+                  >+ New Tag</el-button
+                >
+              </template>
+            </el-table-column>
             <!-- 展开列 -->
             <el-table-column type="index"></el-table-column>
             <el-table-column
@@ -76,7 +107,38 @@
           <!-- 静态参数表格 -->
           <el-table :data="onlyParamsData" border stripe>
             <!-- 展开行 -->
-            <el-table-column type="expand"></el-table-column>
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <!-- 选项 -->
+                <el-tag
+                  v-for="(item, index) in scope.row.attr_vals"
+                  :key="index"
+                  closable
+                  @close="handleClose(index, scope.row)"
+                >
+                  {{ item }}</el-tag
+                >
+                <!-- 输入框 -->
+                <el-input
+                  class="input-new-tag"
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                >
+                </el-input>
+                <!-- 添加按钮 -->
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput(scope.row)"
+                  >+ New Tag</el-button
+                >
+              </template>
+            </el-table-column>
             <!-- 展开列 -->
             <el-table-column type="index"></el-table-column>
             <el-table-column
@@ -196,18 +258,21 @@ export default {
       editParamsForm: {
         // 参数名称
         attr_name: '',
-        attr_id: ''
+        attr_id: '',
+        attr_vals: []
       },
       // 修改表单的校验对象
       editParamsRules: {
         attr_name: [{ required: true, message: '请输入参数', trigger: 'blur' }]
       }
+      //
     }
   },
   created() {
     this.getCateList()
   },
   methods: {
+    // 获取分类参数列表
     async getCateList() {
       const { data: res } = await this.$http.get('categories')
       if (res.meta.status !== 200) {
@@ -215,8 +280,14 @@ export default {
       }
       this.cateList = res.data
     },
+    // 获取动态参数、静态属性
     async getParamsData() {
-      if (this.selectedKeys.length !== 3) return (this.selectedKeys = [])
+      if (this.selectedKeys.length !== 3) {
+        this.selectedKeys = []
+        this.manyParamsData = []
+        this.onlyParamsData = []
+        return
+      }
       this.isSelectedTheThird = false
       const { data: res } = await this.$http.get(
         `categories/${this.cateId}/attributes`,
@@ -227,6 +298,12 @@ export default {
         }
       )
       if (res.meta.status !== 200) return this.$message.error('获取参数失败')
+      //   console.log(res.data)
+      res.data.forEach((item) => {
+        item.attr_vals = item.attr_vals ? item.attr_vals.split(' ') : []
+        item.inputVisible = false
+        item.inputValue = ''
+      })
       if (this.activeName === 'many') {
         this.manyParamsData = res.data
       } else if (this.activeName === 'only') {
@@ -271,7 +348,8 @@ export default {
       this.editParamsDialog = true
       this.editParamsForm.attr_id = params.attr_id
       this.editParamsForm.attr_name = params.attr_name
-      console.log(this.editParamsForm)
+    //   this.editParamsForm.attr_vals = params.attr_vals
+    //   console.log(this.editParamsForm)
     },
     // 监听对话框关闭处理函数
     closedEditDialog(formName) {
@@ -286,8 +364,10 @@ export default {
           {
             attr_name: this.editParamsForm.attr_name,
             attr_sel: this.activeName
+            // attr_vals: this.editParamsForm.attr_vals 请求失败
           }
         )
+        // console.log(res)
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
         this.editParamsDialog = false
         this.$message.success(res.meta.msg)
@@ -314,6 +394,44 @@ export default {
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
       this.$message.success(res.meta.msg)
       this.getParamsData()
+    },
+    // 展开行发起请求，提交修改
+    async getParams(params) {
+      const { data: res } = await this.$http.put(
+        `categories/${this.cateId}/attributes/${params.attr_id}`,
+        {
+          attr_name: params.attr_name,
+          attr_sel: params.attr_sel,
+          attr_vals: params.attr_vals.join(' ')
+        }
+      )
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      this.$message.success(res.meta.msg)
+    },
+    // 确认输入后的处理函数
+    handleInputConfirm(params) {
+      const inputValue = params.inputValue.trim()
+      if (inputValue.length === 0) {
+        params.inputValue = ''
+        params.inputVisible = false
+        return
+      }
+      params.attr_vals.push(params.inputValue)
+      params.inputValue = ''
+      this.getParams(params)
+    },
+    // 显示输入框，并获取焦点
+    showInput(params) {
+      params.inputVisible = true
+      // 页面渲染完毕之后才获取焦点
+      this.$nextTick((_) => {
+        this.$refs.saveTagInput.$refs.input.focus()
+      })
+    },
+    // 删除单个关键词
+    handleClose(i, params) {
+      params.attr_vals.splice(i, 1)
+      this.getParams(params)
     }
   },
   computed: {
@@ -333,5 +451,18 @@ export default {
 <style lang="less" scoped>
 .el-row {
   margin: 20px;
+}
+.el-tag {
+  margin: 6px;
+}
+.input-new-tag {
+  width: 120px;
+  margin: 6px;
+}
+.button-new-tag {
+  margin: 6px;
+  border: 1px solid #d9ecff;
+  background-color: #ecf5ff;
+  color: #409eff;
 }
 </style>
