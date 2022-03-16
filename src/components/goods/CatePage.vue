@@ -26,7 +26,7 @@
         :selection-type="false"
         border
       >
-        <template slot="isok" scope="scope">
+        <template slot="isok" slot-scope="scope">
           <i
             class="el-icon-success"
             v-if="scope.row.cat_deleted === false"
@@ -34,7 +34,7 @@
           ></i>
           <i class="el-icon-error" v-else style="color: red"></i>
         </template>
-        <template slot="level" scope="scope">
+        <template slot="level" slot-scope="scope">
           <el-tag size="mini" v-if="scope.row.cat_level === 0">一级</el-tag>
           <el-tag
             size="mini"
@@ -44,7 +44,7 @@
           >
           <el-tag size="mini" v-else type="warning">三级</el-tag>
         </template>
-        <template slot="operate" scope="scope">
+        <template slot="operate" slot-scope="scope">
           <el-button
             type="primary"
             icon="el-icon-edit"

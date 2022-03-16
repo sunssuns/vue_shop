@@ -7,6 +7,7 @@ import UsersPage from '@/components/users/UsersPage.vue'
 import RightsPage from '@/components/rights/RightsPage.vue'
 import RolesPage from '@/components/rights/RolesPage.vue'
 import CatePage from '@/components/goods/CatePage.vue'
+import ParamsPage from '@/components/goods/ParamsPage.vue'
 
 Vue.use(VueRouter)
 
@@ -37,6 +38,10 @@ const routes = [
       {
         path: '/categories',
         component: CatePage
+      },
+      {
+        path: '/params',
+        component: ParamsPage
       }
     ]
   }
