@@ -11,7 +11,7 @@ body,
   margin-bottom: 20px;
 }
 .el-card {
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15) !important;
 }
 .el-table,
 .el-pagination {
@@ -19,4 +19,10 @@ body,
 }
 .el-cascader-panel {
   height: 200px;
+}
+.el-steps {
+  margin: 20px 0;
+}
+.el-step__title {
+  font-size: 13px !important;
 }

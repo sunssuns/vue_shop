@@ -19,6 +19,37 @@ Vue.prototype.$http = axios
 Vue.config.productionTip = false
 
 Vue.component('tree-table', TreeTable)
+
+Vue.filter('timeFilter', function (time) {
+  //  返回处理后的值
+  const date = new Date(time)
+
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1 // 月份是从0开始的
+  const day = date.getDate()
+  const hour = date.getHours()
+  const min = date.getMinutes()
+  const sec = date.getSeconds()
+  const preArr = Array.apply(null, Array(10)).map(function (elem, index) {
+    return '0' + index
+  })
+
+  const newTime =
+    year +
+    '-' +
+    (preArr[month] || month) +
+    '-' +
+    (preArr[day] || day) +
+    ' ' +
+    (preArr[hour] || hour) +
+    ':' +
+    (preArr[min] || min) +
+    ':' +
+    (preArr[sec] || sec)
+
+  return newTime
+})
+
 new Vue({
   router,
   render: (h) => h(App)
